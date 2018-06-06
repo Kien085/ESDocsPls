@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <base data-ice="baseUrl">
-  <title data-ice="title">Home | peter-test</title>
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">app/components/CommentGroup.jsx | peter-test</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -278,131 +278,212 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="team-kiwi--39-s-conveyor-belt-repository">Team Kiwi&apos;s Conveyor Belt Repository</h1><p>Welcome to Kiwi&apos;s repository for generating a conveyor belt to build software the right way.
-We have included in this repository different approaches to building our conveyor built
-in order to compare and contrast the strengths and weaknesses each technology has
-against the other. We compare React, Angular, Vue, and Web Components in order to determine
-which technology is most compatible with our team&apos;s skills and abilities. We also compare
-these technologies to provide Peter, our client, a clearer understanding on how we reached
-our final decision on the technologies we decided upon.</p>
-<h2 id="build-pipeline">Build Pipeline</h2><p><img src="README_resources/build_pipeline.png?raw=true" alt="High Level Build Pipeline" title="Optional Title"></p>
-<h2 id="getting-started">Getting Started</h2><p>To get started, clone our repository. </p>
-<pre><code><code class="source-code prettyprint">TODO: Provide Steps how to run our different conveyor belts.</code>
-</code></pre><h2 id="documentation-generation">Documentation Generation</h2><p>For document generation, we are using ESDocs.</p>
-<p>From ESDocs&apos; Website:</p>
-<pre><code><code class="source-code prettyprint">ESDoc has two goals.
+<div class="content" data-ice="content"><h1 data-ice="title">app/components/CommentGroup.jsx</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import React, { Component } from &apos;react&apos;;
+import { connect } from &apos;react-redux&apos;;
+import Paper from &apos;material-ui/Paper&apos;;
+import FlatButton from &apos;material-ui/FlatButton&apos;;
+import TextField from &apos;material-ui/TextField&apos;;
+import Divider from &apos;material-ui/Divider&apos;;
+import { ListItem } from &apos;material-ui/List&apos;;
 
-- To make documentation maintenance comfortable and pleasant
-- To create easy-to-understand documentation.
-  In order to achieve this two goals, ESDoc produces a practical document, 
-  measures the coverage, integrates the test code and more.</code>
-</code></pre><p>To find out more about ESDocs, please visit: <a href="https://esdoc.org/manual/usage.html">https://esdoc.org/manual/usage.html</a></p>
-<p>We use ESDocs via its basic usage, such as:</p>
-<pre><code><code class="source-code prettyprint">/**
- * this is MyClass.
+// - Import actions
+import * as commentActions from &apos;commentActions&apos;;
+
+// - Import app components
+import CommentList from &apos;CommentList&apos;;
+import CommentWrite from &apos;CommentWrite&apos;;
+import UserAvatar from &apos;UserAvatar&apos;;
+
+export class CommentGroup extends Component {
+    /**
+     * Component constructor
+     * @param  {object} props is an object properties of component
+     */
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            commentText: &quot;&quot;,
+            postDisable: true
+        };
+    }
+
+    // Clear comment text field
+    clearCommentWrite = () =&gt; {
+        this.setState({
+            commentText: &apos;&apos;,
+            postDisable: false
+        });
+    }
+
+    // Post comment
+    handlePostComment = () =&gt; {
+        this.props.send(this.state.commentText, this.props.postId, this.clearCommentWrite);
+    }
+
+    /**
+     * When comment text changed
+     * @param  {event} evt is an event passed by change comment text callback funciton
+     * @param  {string} data is the comment text which user writes
+     */
+    handleOnChange = (evt, data) =&gt; {
+        this.setState({ commentText: data });
+
+        if (data.length === 0 || data.trim() === &apos;&apos;) {
+            this.setState({
+                commentText: &apos;&apos;,
+                postDisable: true
+            });
+        }
+
+        else {
+            this.setState({
+                commentText: data,
+                postDisable: false
+            });
+        }
+    }
+
+    /**
+     * Get comments&apos; DOM
+     * @return {DOM} list of comments&apos; DOM
+     */
+    commentList = () =&gt; {
+        let comments = this.props.comments;
+
+        if (comments) {
+            let parsedComments = [];
+
+            Object.keys(comments).slice(0, 3).forEach((commentId) =&gt; {
+                parsedComments.push({
+                    id: commentId,
+                    ...comments[commentId]
+                });
+            });
+
+            if (parsedComments.length === 2) {
+                parsedComments.push(parsedComments[0]);
+            }
+
+            else if (parsedComments.length === 1) {
+                parsedComments.push(parsedComments[0]);
+                parsedComments.push(parsedComments[0]);
+            }
+
+            return parsedComments.map((comment, index) =&gt; {
+                const { userInfo } = this.props;
+
+                const commentAvatar = userInfo &amp;&amp; userInfo[comment.userId] ? userInfo[comment.userId].avatar || &apos;&apos; : &apos;&apos;;
+                const commentFullName = userInfo &amp;&amp; userInfo[comment.userId] ? userInfo[comment.userId].fullName || &apos;&apos; : &apos;&apos;;
+
+                return (&lt;div style={{borderRadius: &quot;0 0 7px 7px&quot;}}&gt;&lt;ListItem key={index} style={{ position: &quot;&quot;, zIndex: &quot;&quot; }} innerDivStyle={{ padding: &quot;6px 16px 16px 72px&quot; }}
+                    leftAvatar={&lt;UserAvatar fullName={commentFullName} fileName={commentAvatar} style={{ top: &quot;8px&quot; }} size={36} /&gt;}
+                    secondaryText={&lt;div&gt;
+                        &lt;span style={{ fontSize: &quot;13px&quot;, color: &quot;rgba(0,0,0,0.87)&quot;, textOverflow: &quot;ellipsis&quot;, overflow: &quot;hidden&quot;, display: &apos;block&apos; }}&gt;
+                            {comment.userDisplayName}
+                        &lt;/span&gt;
+
+                        &lt;span style={{ fontSize: &quot;13px&quot;, color: &quot;rgba(0,0,0,0.87)&quot;, fontWeight: 300, whiteSpace: &quot;pre-wrap&quot;, display: &apos;block&apos; }}&gt;
+                            {comment.text}
+                        &lt;/span&gt;
+                    &lt;/div&gt;}
+                    secondaryTextLines={2} /&gt;&lt;/div&gt;
+                );
+            });
+        }
+    }
+
+    /**
+     * Reneder component DOM
+     * @return {react element} return the DOM which rendered by component
+     */
+    render() {
+        return (
+            &lt;div&gt;
+                &lt;div style={this.props.comments &amp;&amp; Object.keys(this.props.comments).length &gt; 0 ? { display: &quot;block&quot; } : { display: &quot;none&quot; }}&gt;
+                    &lt;Divider /&gt;
+                    &lt;div style={!this.props.open ? { display: &quot;block&quot; } : { display: &quot;none&quot; }}&gt;
+                    {/* &lt;Paper zDepth={0} className=&quot;animate-top&quot; style={!this.props.open ? { display: &quot;block&quot; } : { display: &quot;none&quot; }}&gt; */}
+                        &lt;div style={{ position: &quot;relative&quot;, height: &quot;60px&quot;, borderRadius: &apos;0 0 7px 7px&apos; }} &gt;
+                            &lt;FlatButton label=&quot; &quot; style={{ height: &quot;60px&quot;, zIndex: 5, borderRadius: &apos;0 0 7px 7px&apos; }} fullWidth={true} onClick={this.props.onToggleRequest} /&gt;
+
+                            &lt;div className=&quot;comment__list-show&quot;&gt;
+                                {this.commentList()}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    {/* &lt;/Paper&gt; */}
+                    {(this.props.comments &amp;&amp; Object.keys(this.props.comments).length &gt; 0)
+                        ? (&lt;Paper zDepth={0} style={this.props.open ? { display: &quot;block&quot;, padding: &quot;0px 0px&quot; } : { display: &quot;none&quot;, padding: &quot;12px 16px&quot; }}&gt;
+                            &lt;CommentList comments={this.props.comments} isPostOwner={this.props.isPostOwner} disableComments={this.props.disableComments} /&gt;
+                        &lt;/Paper&gt;) : &apos;&apos;}
+                &lt;/div&gt;
+
+                {!this.props.disableComments ? (&lt;div&gt;
+                    &lt;Divider /&gt;
+                    &lt;Paper zDepth={0} className=&quot;animate2-top10&quot; style={{ position: &quot;relative&quot;, overflowY: &quot;auto&quot;, padding: &quot;12px 16px&quot;, display: (this.props.open ? &quot;block&quot; : &quot;none&quot;), borderRadius: &quot;0 0 7px 7px&quot; }}&gt;
+                        &lt;div style={{ display: &quot;flex&quot; }}&gt;
+                            &lt;UserAvatar fullName={this.props.fullName} fileName={this.props.avatar} style={{ flex: &quot;none&quot;, margin: &quot;4px 0px&quot; }} size={36} /&gt;
+                            &lt;div style={{ outline: &quot;none&quot;, marginLeft: &quot;16px&quot;, flex: &quot;auto&quot;, flexGrow: 1 }}&gt;
+                                &lt;TextField
+                                    value={this.state.commentText}
+                                    onChange={this.handleOnChange}
+                                    hintText=&quot;Add a comment...&quot;
+                                    underlineShow={false}
+                                    multiLine={true}
+                                    rows={1}
+                                    hintStyle={{ fontWeight: 100, fontSize: &quot;14px&quot; }}
+                                    rowsMax={4}
+                                    textareaStyle={{ fontWeight: 100, fontSize: &quot;14px&quot; }}
+                                    style={{ width: &apos;100%&apos; }}
+                                /&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;FlatButton primary={true} disabled={this.state.postDisable} label=&quot;Post&quot; style={{ float: &quot;right&quot;, clear: &quot;both&quot;, zIndex: 5, margin: &quot;0px 5px 5px 0px&quot;, fontWeight: 400 }} onClick={this.handlePostComment} /&gt;
+                    &lt;/Paper&gt;
+                &lt;/div&gt;) : &apos;&apos;}
+            &lt;/div&gt;
+        );
+    }
+}
+
+/**
+ * Map dispatch to props
+ * @param  {func} dispatch is the function to dispatch action to reducers
+ * @param  {object} ownProps is the props belong to component
+ * @return {object}          props of component
  */
-export default class MyClass {
-  /**
-   * @param {number} a - this is a value.
-   * @param {number} b - this is a value.
-   * @return {number} result of the sum value.
-   */
-  sum(a, b){
-    return a + b;
-  }
-}</code>
-</code></pre><p>A list of tags that are available can be found here: <a href="https://esdoc.org/manual/tags.html">https://esdoc.org/manual/tags.html</a></p>
-<p>Note: Please ensure you have ESDocs installed. If you do not have ESDocs installed,
-please install by running the following commands:</p>
-<pre><code><code class="source-code prettyprint">npm install esdoc esdoc-standard-plugin</code>
-</code></pre><p>In order to view our docs, once you have set up the repository, run the commands</p>
-<pre><code><code class="source-code prettyprint">./node_modules/.bin/esdoc
-open ./docs/index.html</code>
-</code></pre><p>The documentation to all our different technologies we have compared and contrasted will open
-in your browser. There you may browse and read in more detail the code we wrote for each
-technology.</p>
-<h1 id="use-of-third-party-integration-tools">Use of Third Party Integration Tools</h1><h2 id="codacy">Codacy</h2><p><a href="https://app.codacy.com/app/kiwi/kiwi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aabadill/kiwi&amp;utm_campaign=badger"><img src="https://api.codacy.com/project/badge/Grade/8569c562e69145308e896348639cf8b7" alt="Codacy Badge"></a></p>
-<p>We use a static code analysis tool called Codacy in order to 
-keep our code consistent and as simple as possible.
-We use this in order to track the progress of our code quality
-as the project progresses. This tool allows us to set goals
-we can determine within our team and with our client to ensure code quality. Since people have different measures of quality,
-we may dial it to our very own specificcations as to what quality means for us and our client. 
-Some of the metrics we can fine tune are:</p>
-<pre><code><code class="source-code prettyprint">- Code Complexity
-- File Structure Complexity
-- Duplication of Code and Files
-- Code Test Coverage
-- Pull Requests, Commits, etc.
-- Security Vulnerablity Analysis</code>
-</code></pre><p>Once we have set the standards we are to follow, the dashboard this tool provides will allow our client to visualize the quality of work we are completing with a letter grade rating.</p>
-<p>Internally, we use this to track everyone&apos;s contribution and quality of work by viewing what issues are introduced by whom and how often. In this way, we are able to track bugs in our code to avoid future repetitions of the same mistakes,
-and thus tune and refine our pipeline if needed.</p>
-<p>To find out more about how Codacy works, please
-visit the documentation page here: <a href="https://support.codacy.com/hc/en-us">https://support.codacy.com/hc/en-us</a></p>
-<h2 id="travis-ci">Travis CI</h2><p><a href="https://travis-ci.org/Kien085/kiwi"><img src="https://travis-ci.org/Kien085/kiwi.svg?branch=master" alt="Build Status"></a></p>
-<p>We use Travis CI as our continuous integration tool. It allows us to centralize our builds and deployments. while adding another layer of quality checks through testing and deployment
-in a controlled environment, independer of any one&apos;s developer&apos;s
-local environment. Since we may control this independent environment the way we want, it allows us to have a separate
-environment where we may run our build process and incrementally add new features to our project. Not only this,
-we can control what gets into the build in an incremental manner. 
-We perform a series of tests that make sure that what we develop will work in the proposed environment we agree
-upon with our client. It also allows us to perform code reviews so we can add a human aspect to how our code should
-be in terms of quality, structure, and readability. 
-Lastly, we can automate many tasks that would otherwise require
-much developer time, saving our client time and money.</p>
-<h1 id="testing">Testing</h1><p>For testing, we are using Enzyme and Jest.</p>
-<p>Specifically, we are using Enzyme to test that our
-components render as they should. In other words,
-we want to ensure that what we visualize with our client
-shows up in the user interface. We also perform a variety
-of other tests that which include that our components
-behave as they should. 
-For example, when we set a specific color for text, does the
-text actually change color? Does it render to the correct color? Etc.</p>
-<p>Furthermore, we use Jest because of their focus on snapshots for testing purposes. We use snapshots to stay consistent
-with how we want our components to look. These snapshots allow us to optimize the underlying implementation of a component while testing that its appearance has not changed. Jest compares a previous &quot;snapshot&quot; of what our code rendered to
-and tests that our update does not change the appearance of the component. In this way, we are able to separate implementation tests from the rendering tests.</p>
-<p>We recognize that performing tests that do not need to be performed is redudant and not time efficient. So, we have
-set up our pipeline so that tests only run when they should
-and are responsive to the changes made in the code base.
-In other words, we run tests according to the chain of
-dependencies that the change will affect.</p>
-<h1 id="github-file-structure">GitHub File Structure</h1><p>We have organized our repository to make it easy to navigate
-by anyone who may want to look at our current work by using
-familiar names that are easy to understand and remember.</p>
-<p>We have also made our best effort to keep different technologies separate so that they may not interfere with eachother with being run.</p>
-<p>The following file structure roughly represents how we have organized our repository:</p>
-<pre><code><code class="source-code prettyprint">/Kiwi
-- this is the topmost directory of our project
-- here you will find configuration files to most of the
-  tools we use throughout our repository including TravisCI
-  Firebase, ESDocs, etc
+const mapDispatchToProps = (dispatch, ownProps) =&gt; {
+    return {
+        send: (text, postId, callBack) =&gt; {
+            dispatch(commentActions.dbAddComment({
+                postId: postId,
+                text: text,
+                ownerPostUserId: ownProps.ownerPostUserId
+            }, callBack))
+        }
+    }
+}
 
-/_tests_
-- here you will find our React tests, which include our
-  Enzyme and Jest tests
+/**
+ * Map state to props
+ * @param  {object} state is the obeject from redux store
+ * @param  {object} ownProps is the props belong to component
+ * @return {object}          props of component
+ */
+const mapStateToProps = (state, ownProps) =&gt; {
+    return {
+        comments: state.comment.postComments[ownProps.postId],
+        avatar: state.user.info &amp;&amp; state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].avatar || &apos;&apos; : &apos;&apos;,
+        fullName: state.user.info &amp;&amp; state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].fullName || &apos;&apos; : &apos;&apos;,
+        userInfo: state.user.info
+    }
+}
 
-/dev
-- folder containts components that are currently under
-  development
+// - Connect component to redux store
+export default connect(mapStateToProps, mapDispatchToProps)(CommentGroup)</code></pre>
 
-/dev/peter-test
-- this folder contains our use of different frameworks
-  for the purpose of comparing and contrasting the strengths and weaknesses of each framework
-- Included frameworks: Angular, React, Vue, and 
-  WebComponents
-
-/docs
-- this folder contains teh documentation to the components
-  under development as well as components that have reached
-  production
-- docs are able to be viewed via a browser</code>
-</code></pre><h1 id="license">License</h1><p><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-</div>
 </div>
 
 <footer class="footer">

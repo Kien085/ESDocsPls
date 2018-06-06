@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <base data-ice="baseUrl">
-  <title data-ice="title">Home | peter-test</title>
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">app/components/Post.jsx | peter-test</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -278,131 +278,384 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="team-kiwi--39-s-conveyor-belt-repository">Team Kiwi&apos;s Conveyor Belt Repository</h1><p>Welcome to Kiwi&apos;s repository for generating a conveyor belt to build software the right way.
-We have included in this repository different approaches to building our conveyor built
-in order to compare and contrast the strengths and weaknesses each technology has
-against the other. We compare React, Angular, Vue, and Web Components in order to determine
-which technology is most compatible with our team&apos;s skills and abilities. We also compare
-these technologies to provide Peter, our client, a clearer understanding on how we reached
-our final decision on the technologies we decided upon.</p>
-<h2 id="build-pipeline">Build Pipeline</h2><p><img src="README_resources/build_pipeline.png?raw=true" alt="High Level Build Pipeline" title="Optional Title"></p>
-<h2 id="getting-started">Getting Started</h2><p>To get started, clone our repository. </p>
-<pre><code><code class="source-code prettyprint">TODO: Provide Steps how to run our different conveyor belts.</code>
-</code></pre><h2 id="documentation-generation">Documentation Generation</h2><p>For document generation, we are using ESDocs.</p>
-<p>From ESDocs&apos; Website:</p>
-<pre><code><code class="source-code prettyprint">ESDoc has two goals.
+<div class="content" data-ice="content"><h1 data-ice="title">app/components/Post.jsx</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import React, { Component } from &apos;react&apos;;
+import { connect } from &apos;react-redux&apos;;
+import { NavLink } from &apos;react-router-dom&apos;;
+import { push } from &apos;react-router-redux&apos;;
+import moment from &apos;moment&apos;;
+import Linkify from &apos;react-linkify&apos;;
 
-- To make documentation maintenance comfortable and pleasant
-- To create easy-to-understand documentation.
-  In order to achieve this two goals, ESDoc produces a practical document, 
-  measures the coverage, integrates the test code and more.</code>
-</code></pre><p>To find out more about ESDocs, please visit: <a href="https://esdoc.org/manual/usage.html">https://esdoc.org/manual/usage.html</a></p>
-<p>We use ESDocs via its basic usage, such as:</p>
-<pre><code><code class="source-code prettyprint">/**
- * this is MyClass.
+// - Material UI
+import { CardActions, CardHeader, CardMedia, CardText } from &apos;material-ui/Card&apos;;
+import Snackbar from &apos;material-ui/Snackbar&apos;;
+import SvgLink from &apos;material-ui/svg-icons/content/link&apos;;
+import SvgFavorite from &apos;material-ui/svg-icons/action/favorite&apos;;
+import SvgFavoriteBorder from &apos;material-ui/svg-icons/action/favorite-border&apos;;
+import Checkbox from &apos;material-ui/Checkbox&apos;;
+import Paper from &apos;material-ui/Paper&apos;;
+import Menu from &apos;material-ui/Menu&apos;;
+import MenuItem from &apos;material-ui/MenuItem&apos;;
+import TextField from &apos;material-ui/TextField&apos;;
+import IconMenu from &apos;material-ui/IconMenu&apos;;
+import reactStringReplace from &apos;react-string-replace&apos;;
+
+// - Import app components
+import CommentGroup from &apos;CommentGroup&apos;;
+import PostWrite from &apos;PostWrite&apos;;
+import Img from &apos;Img&apos;;
+import IconButtonElement from &apos;IconButtonElement&apos;;
+import UserAvatar from &apos;UserAvatar&apos;;
+
+// - Import actions
+import * as voteActions from &apos;voteActions&apos;;
+import * as postActions from &apos;postActions&apos;;
+import * as globalActions from &apos;globalActions&apos;;
+
+export class Post extends Component {
+    /**
+     * Component constructor
+     * @param  {object} props is an object properties of component
+     */
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            // Post text
+            text: this.props.body,
+
+            // It&apos;s true if whole the text post is visible
+            readMoreState: false,
+
+            // Handle open comment from parent component
+            openComments: false,
+
+            // If it&apos;s true, share dialog will be open
+            shareOpen: false,
+
+            // If it&apos;s true comment will be disabled on post
+            disableComments: this.props.disableComments,
+
+            // If it&apos;s true share will be disabled on post
+            disableSharing: this.props.disableSharing,
+
+            // Title of share post
+            shareTitle: &apos;Share On&apos;,
+
+            // If it&apos;s true, post link will be visible in share post dialog
+            openCopyLink: false,
+
+            // If it&apos;s true, post write will be open
+            openPostWrite: false
+        };
+    }
+
+
+    /**
+     * Toggle on show/hide comment
+     * @param  {event} evt passed by clicking on comment slide show
+     */
+    handleOpenComments = (evt) =&gt; {
+        this.setState({ openComments: !this.state.openComments });
+    }
+
+    /**
+     * Open post write
+     * 
+     * @memberof Blog
+     */
+    handleOpenPostWrite = () =&gt; {
+        this.setState({ openPostWrite: true });
+    }
+
+    /**
+     * Close post write
+     * 
+     * @memberof Blog
+     */
+    handleClosePostWrite = () =&gt; {
+        this.setState({ openPostWrite: false });
+    }
+
+    /**
+     * Delete a post
+     * 
+     * @memberof Post
+     */
+    handleDelete = () =&gt; {
+        this.props.delete(this.props.id);
+    }
+
+    /**
+     * Show copy link 
+     * 
+     * @memberof Post
+     */
+    handleCopyLink = () =&gt; {
+        this.setState({
+            openCopyLink: true,
+            shareTitle: &apos;Copy Link&apos;
+        });
+    }
+
+    /**
+     * Open share post
+     * 
+     * @memberof Post
+     */
+    handleOpenShare = (event) =&gt; {
+        this.setState({ shareOpen: true });
+
+        const text = `${location.origin}/${this.props.ownerUserId}/posts/${this.props.id}`;
+
+        if (window.clipboardData &amp;&amp; window.clipboardData.setData) {
+            // IE specific code path to prevent textarea being shown while dialog is visible.
+            return clipboardData.setData(&quot;Text&quot;, text);
+        } else if (document.queryCommandSupported &amp;&amp; document.queryCommandSupported(&quot;copy&quot;)) {
+            var textarea = document.createElement(&quot;textarea&quot;);
+            textarea.textContent = text;
+            textarea.style.position = &quot;fixed&quot;;  // Prevent scrolling to bottom of page in MS Edge.
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                return document.execCommand(&quot;copy&quot;);  // Security exception may be thrown by some browsers.
+            } catch (ex) {
+                console.warn(&quot;Copy to clipboard failed.&quot;, ex);
+                return false;
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+    }
+
+    /**
+     * Close share post
+     * 
+     * @memberof Post
+     */
+    handleCloseShare = () =&gt; {
+        this.setState({
+            shareOpen: false,
+            shareTitle: &apos;Share On&apos;,
+            openCopyLink: false
+        });
+    }
+
+    /**
+     * Handle vote on a post
+     * 
+     * @memberof Post
+     */
+    handleVote = () =&gt; {
+        if (this.props.userVoteStatus) {
+            this.props.unvote();
+        }
+
+        else {
+            this.props.vote();
+        }
+    }
+
+    /**
+     * Set open comment group function on state which passed by CommentGroup component
+     * @param  {function} open the function to open comment list
+     */
+    getOpenCommentGroup = (open) =&gt; {
+        this.setState({ openCommentGroup: open });
+    }
+
+    /**
+     * Handle read more event
+     * @param  {event} evt  is the event passed by click on read more
+     */
+    handleReadMore(evt) {
+        this.setState({ readMoreState: !this.state.readMoreState });
+    }
+
+    /**
+     * Reneder component DOM
+     * @return {react element} return the DOM which rendered by component
+     */
+    render() {
+        /**
+         * DOM styles
+         *
+         * @memberof Post
+         */
+        const styles = {
+            counter: {
+                lineHeight: &apos;36px&apos;,
+                color: &apos;#757575&apos;,
+                fontSize: &apos;12px&apos;
+            },
+            postBody: {
+                wordWrap: &quot;break-word&quot;
+            },
+            dialog: {
+                width: &apos;&apos;,
+                maxWidth: &apos;530px&apos;,
+                borderRadius: &quot;4px&quot;
+            },
+            rightIconMenu: {
+                position: &apos;absolute&apos;,
+                right: 18,
+                top: 8
+            }
+        };
+
+        const RightIconMenu = () =&gt; (
+            &lt;IconMenu iconButtonElement={IconButtonElement} style={{ display: &quot;block&quot;, position: &quot;absolute&quot;, top: &quot;0px&quot;, right: &quot;4px&quot;, MsTransform: &apos;rotate(90deg)&apos;, WebkitTransform: &apos;rotate(90deg)&apos;, MozTransform: &apos;rotate(90deg)&apos;, OTransform: &apos;rotate(90deg)&apos;, transform: &apos;rotate(90deg)&apos; }}&gt;
+                &lt;MenuItem primaryText=&quot;Edit&quot; onClick={this.handleOpenPostWrite} /&gt;
+                &lt;MenuItem primaryText=&quot;Delete&quot; onClick={this.handleDelete} /&gt;
+                &lt;MenuItem primaryText={this.props.disableComments ? &quot;Enable comments&quot; : &quot;Disable comments&quot;} onClick={() =&gt; this.props.toggleDisableComments(!this.props.disableComments)} /&gt;
+                &lt;MenuItem primaryText={this.props.disableSharing ? &quot;Enable sharing&quot; : &quot;Disable sharing&quot;} onClick={() =&gt; this.props.toggleSharingComments(!this.props.disableSharing)} /&gt;
+            &lt;/IconMenu&gt;
+        );
+
+        const { ownerUserId, setHomeTitle, goTo, ownerDisplayName, creationDate, avatar, fullName, isPostOwner, image, body } = this.props;
+
+        return (
+            &lt;div style={{ backgroundColor: &apos;#fff&apos;, border: &apos;1px solid #dddfe2&apos;, borderRadius: &apos;7px&apos; }}&gt;
+                &lt;CardHeader
+                    title={&lt;NavLink to={`/${ownerUserId}`}&gt;{ownerDisplayName}&lt;/NavLink&gt;}
+                    subtitle={moment.unix(creationDate).fromNow()}
+                    avatar={&lt;NavLink to={`/${ownerUserId}`}&gt;&lt;UserAvatar fullName={fullName} fileName={avatar} size={36} /&gt;&lt;/NavLink&gt;}
+                &gt;
+                    {isPostOwner ? (&lt;div style={styles.rightIconMenu}&gt;&lt;RightIconMenu /&gt;&lt;/div&gt;) : &apos;&apos;}
+                &lt;/CardHeader&gt;
+
+                {body ?
+                    &lt;CardText style={styles.postBody}&gt;
+                        &lt;Linkify properties={{ target: &apos;_blank&apos;, style: { color: &apos;blue&apos; } }}&gt;
+                            {reactStringReplace(body, /#(\w+)/g, (match, i) =&gt; (
+                                &lt;NavLink
+                                    style={{ color: &apos;green&apos; }}
+                                    key={match + i}
+                                    to={`/tag/${match}`}
+                                    onClick={evt =&gt; {
+                                        evt.preventDefault()
+                                        goTo(`/tag/${match}`)
+                                        setHomeTitle(`#${match}`)
+                                    }}
+                                &gt;
+                                    #{match}
+                                &lt;/NavLink&gt;
+                            ))}
+                        &lt;/Linkify&gt;
+                    &lt;/CardText&gt; : &apos;&apos;
+                }
+
+                {image ? (
+                    &lt;CardMedia&gt;
+                        &lt;Img fileName={image} /&gt;
+                    &lt;/CardMedia&gt;) : &apos;&apos;}
+
+                &lt;CardActions&gt;
+                    &lt;div style={{ margin: &quot;16px 8px&quot;, display: &apos;flex&apos;, justifyContent: &apos;space-between&apos; }}&gt;
+                        &lt;div style={{ display: &apos;flex&apos; }}&gt;
+                            &lt;div className=&apos;g__circle&apos; onClick={this.handleVote}&gt;
+                                &lt;Checkbox
+                                    checkedIcon={&lt;SvgFavorite style={{ fill: &apos;#EC425C&apos; }} /&gt;}
+                                    uncheckedIcon={&lt;SvgFavoriteBorder style={{ fill: &apos;#757575&apos; }} /&gt;}
+                                    defaultChecked={this.props.userVoteStatus}
+                                    style={{ transform: &apos;translate(6px, 6px)&apos; }}
+                                /&gt;
+                            &lt;/div&gt;
+                            &lt;div style={styles.counter}&gt; {this.props.voteCount &gt; 0 ? this.props.voteCount : &apos;&apos;} &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;div style={{ display: &apos;flex&apos; }}&gt;
+                            {!this.props.disableComments ? (&lt;div style={{ display: &apos;flex&apos;, alignItems: &apos;center&apos; }}&gt;
+                                &lt;div style={styles.counter}&gt;
+                                    {this.props.commentCount &gt; 1 ? this.props.commentCount + &quot; comments&quot; : 
+                                        this.props.commentCount === 1 ? 
+                                            this.props.commentCount + &quot; comment&quot; : &apos;&apos;}
+                                &lt;/div&gt;
+                                &lt;span className=&apos;g__circle&apos; style={{ display: &apos;flex&apos;, alignItems: &apos;center&apos;, justifyContent: &apos;center&apos;, margin: &apos;0&apos; }}&gt;
+                                    &lt;svg onClick={this.handleOpenComments} style={{ marginTop: &apos;2px&apos; }} width=&quot;20&quot; height=&quot;21&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&lt;path d=&quot;M11.87 16l-7.435 4.415A.288.288 0 0 1 4 20.168V16h-.493c-1.22 0-1.661-.127-2.107-.365A2.486 2.486 0 0 1 .365 14.6C.127 14.154 0 13.712 0 12.493V3.507C0 2.287.127 1.846.365 1.4A2.486 2.486 0 0 1 1.4.365C1.846.127 2.288 0 3.507 0h12.986c1.22 0 1.661.127 2.107.365.446.239.796.589 1.035 1.035.238.446.365.888.365 2.107v8.986c0 1.22-.127 1.661-.365 2.107a2.486 2.486 0 0 1-1.035 1.035c-.446.238-.888.365-2.107.365h-4.624zM3.753 2c-.61 0-.831.063-1.054.183-.223.119-.398.294-.517.517-.12.223-.183.444-.183 1.054v8.492c0 .61.063.831.183 1.054.119.223.294.398.517.517.223.12.444.183 1.054.183h12.492c.61 0 .831-.063 1.054-.183.223-.119.398-.294.517-.517.12-.223.183-.444.183-1.054V3.754c0-.61-.063-.831-.183-1.054a1.243 1.243 0 0 0-.517-.517c-.223-.12-.444-.183-1.054-.183H3.754zm6.97 12H6v3.104L10.724 14z&quot; fill={(this.props.commentCount &gt; 0) ? &apos;#4E7FF7&apos; : &apos;#757575&apos;} /&gt;
+                                        &lt;rect x=&quot;4&quot; y=&quot;4&quot; width=&quot;12&quot; height=&quot;2&quot; fill={(this.props.commentCount &gt; 0) ? &apos;#4E7FF7&apos; : &apos;#fff&apos;}&gt;&lt;/rect&gt;
+                                        &lt;rect x=&quot;4&quot; y=&quot;7&quot; width=&quot;12&quot; height=&quot;2&quot; fill={(this.props.commentCount &gt; 0) ? &apos;#4E7FF7&apos; : &apos;#fff&apos;}&gt;&lt;/rect&gt;
+                                        &lt;rect x=&quot;4&quot; y=&quot;10&quot; width=&quot;12&quot; height=&quot;2&quot; fill={(this.props.commentCount &gt; 0) ? &apos;#4E7FF7&apos; : &apos;#fff&apos;}&gt;&lt;/rect&gt;
+                                    &lt;/svg&gt;
+                                &lt;/span&gt;
+                            &lt;/div&gt;) : &apos;&apos;}
+                            {!this.props.disableSharing ?
+                                &lt;div className=&apos;g__circle&apos; style={{ display: &apos;flex&apos;, alignItems: &apos;center&apos;, justifyContent: &apos;center&apos; }}&gt;
+                                    &lt;svg onClick={this.handleOpenShare} style={{marginBottom: &apos;1px&apos;}} width=&quot;20&quot; height=&quot;16&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;&lt;path d=&quot;M19.7 6.2l-6.6-6c-.5-.5-1.1 0-1.1.8v3C7.3 4 3.3 6.9 1.4 10.8.7 12.1.3 13.5 0 14.9c-.2 1 1.3 1.5 1.9.6C4.1 12 7.8 9.7 12 9.7V13c0 .8.6 1.3 1.1.8l6.6-6c.4-.4.4-1.2 0-1.6z&quot; fill=&quot;#757575&quot;/&gt;&lt;/svg&gt;
+                                &lt;/div&gt;
+                                : &apos;&apos;}
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/CardActions&gt;
+
+                &lt;CommentGroup open={this.state.openComments} ownerPostUserId={this.props.ownerUserId} onToggleRequest={this.handleOpenComments} isPostOwner={this.props.isPostOwner} disableComments={this.props.disableComments} postId={this.props.id} /&gt;
+
+                &lt;Snackbar
+                    open={this.state.shareOpen}
+                    message={&quot;Link to Post copied!&quot;}
+                    autoHideDuration={1000}
+                    style={{ left: &apos;1%&apos;, transform: &apos;none&apos; }}
+                /&gt;
+
+                &lt;PostWrite
+                    open={this.state.openPostWrite}
+                    onRequestClose={this.handleClosePostWrite}
+                    edit={true}
+                    text={this.props.body}
+                    image={this.props.image ? this.props.image : &apos;&apos;}
+                    id={this.props.id}
+                    disableComments={this.props.disableComments}
+                    disableSharing={this.props.disableSharing}
+                /&gt;
+            &lt;/div&gt;
+        );
+    }
+}
+
+/**
+ * Map dispatch to props
+ * @param  {func} dispatch is the function to dispatch action to reducers
+ * @param  {object} ownProps is the props belong to component
+ * @return {object}          props of component
  */
-export default class MyClass {
-  /**
-   * @param {number} a - this is a value.
-   * @param {number} b - this is a value.
-   * @return {number} result of the sum value.
-   */
-  sum(a, b){
-    return a + b;
-  }
-}</code>
-</code></pre><p>A list of tags that are available can be found here: <a href="https://esdoc.org/manual/tags.html">https://esdoc.org/manual/tags.html</a></p>
-<p>Note: Please ensure you have ESDocs installed. If you do not have ESDocs installed,
-please install by running the following commands:</p>
-<pre><code><code class="source-code prettyprint">npm install esdoc esdoc-standard-plugin</code>
-</code></pre><p>In order to view our docs, once you have set up the repository, run the commands</p>
-<pre><code><code class="source-code prettyprint">./node_modules/.bin/esdoc
-open ./docs/index.html</code>
-</code></pre><p>The documentation to all our different technologies we have compared and contrasted will open
-in your browser. There you may browse and read in more detail the code we wrote for each
-technology.</p>
-<h1 id="use-of-third-party-integration-tools">Use of Third Party Integration Tools</h1><h2 id="codacy">Codacy</h2><p><a href="https://app.codacy.com/app/kiwi/kiwi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aabadill/kiwi&amp;utm_campaign=badger"><img src="https://api.codacy.com/project/badge/Grade/8569c562e69145308e896348639cf8b7" alt="Codacy Badge"></a></p>
-<p>We use a static code analysis tool called Codacy in order to 
-keep our code consistent and as simple as possible.
-We use this in order to track the progress of our code quality
-as the project progresses. This tool allows us to set goals
-we can determine within our team and with our client to ensure code quality. Since people have different measures of quality,
-we may dial it to our very own specificcations as to what quality means for us and our client. 
-Some of the metrics we can fine tune are:</p>
-<pre><code><code class="source-code prettyprint">- Code Complexity
-- File Structure Complexity
-- Duplication of Code and Files
-- Code Test Coverage
-- Pull Requests, Commits, etc.
-- Security Vulnerablity Analysis</code>
-</code></pre><p>Once we have set the standards we are to follow, the dashboard this tool provides will allow our client to visualize the quality of work we are completing with a letter grade rating.</p>
-<p>Internally, we use this to track everyone&apos;s contribution and quality of work by viewing what issues are introduced by whom and how often. In this way, we are able to track bugs in our code to avoid future repetitions of the same mistakes,
-and thus tune and refine our pipeline if needed.</p>
-<p>To find out more about how Codacy works, please
-visit the documentation page here: <a href="https://support.codacy.com/hc/en-us">https://support.codacy.com/hc/en-us</a></p>
-<h2 id="travis-ci">Travis CI</h2><p><a href="https://travis-ci.org/Kien085/kiwi"><img src="https://travis-ci.org/Kien085/kiwi.svg?branch=master" alt="Build Status"></a></p>
-<p>We use Travis CI as our continuous integration tool. It allows us to centralize our builds and deployments. while adding another layer of quality checks through testing and deployment
-in a controlled environment, independer of any one&apos;s developer&apos;s
-local environment. Since we may control this independent environment the way we want, it allows us to have a separate
-environment where we may run our build process and incrementally add new features to our project. Not only this,
-we can control what gets into the build in an incremental manner. 
-We perform a series of tests that make sure that what we develop will work in the proposed environment we agree
-upon with our client. It also allows us to perform code reviews so we can add a human aspect to how our code should
-be in terms of quality, structure, and readability. 
-Lastly, we can automate many tasks that would otherwise require
-much developer time, saving our client time and money.</p>
-<h1 id="testing">Testing</h1><p>For testing, we are using Enzyme and Jest.</p>
-<p>Specifically, we are using Enzyme to test that our
-components render as they should. In other words,
-we want to ensure that what we visualize with our client
-shows up in the user interface. We also perform a variety
-of other tests that which include that our components
-behave as they should. 
-For example, when we set a specific color for text, does the
-text actually change color? Does it render to the correct color? Etc.</p>
-<p>Furthermore, we use Jest because of their focus on snapshots for testing purposes. We use snapshots to stay consistent
-with how we want our components to look. These snapshots allow us to optimize the underlying implementation of a component while testing that its appearance has not changed. Jest compares a previous &quot;snapshot&quot; of what our code rendered to
-and tests that our update does not change the appearance of the component. In this way, we are able to separate implementation tests from the rendering tests.</p>
-<p>We recognize that performing tests that do not need to be performed is redudant and not time efficient. So, we have
-set up our pipeline so that tests only run when they should
-and are responsive to the changes made in the code base.
-In other words, we run tests according to the chain of
-dependencies that the change will affect.</p>
-<h1 id="github-file-structure">GitHub File Structure</h1><p>We have organized our repository to make it easy to navigate
-by anyone who may want to look at our current work by using
-familiar names that are easy to understand and remember.</p>
-<p>We have also made our best effort to keep different technologies separate so that they may not interfere with eachother with being run.</p>
-<p>The following file structure roughly represents how we have organized our repository:</p>
-<pre><code><code class="source-code prettyprint">/Kiwi
-- this is the topmost directory of our project
-- here you will find configuration files to most of the
-  tools we use throughout our repository including TravisCI
-  Firebase, ESDocs, etc
+const mapDispatchToProps = (dispatch, ownProps) =&gt; {
+    return {
+        vote: () =&gt; dispatch(voteActions.dbAddVote(ownProps.id, ownProps.ownerUserId)),
+        unvote: () =&gt; dispatch(voteActions.dbDeleteVote(ownProps.id)),
+        delete: (id) =&gt; dispatch(postActions.dbDeletePost(id)),
+        toggleDisableComments: (status) =&gt; dispatch(postActions.dbUpdatePost({ id: ownProps.id, disableComments: status }, _ =&gt; _)),
+        toggleSharingComments: (status) =&gt; dispatch(postActions.dbUpdatePost({ id: ownProps.id, disableSharing: status }, _ =&gt; _)),
+        goTo: (url) =&gt; dispatch(push(url)),
+        setHomeTitle: (title) =&gt; dispatch(globalActions.setHeaderTitle(title || &apos;&apos;))
 
-/_tests_
-- here you will find our React tests, which include our
-  Enzyme and Jest tests
 
-/dev
-- folder containts components that are currently under
-  development
+    }
+}
 
-/dev/peter-test
-- this folder contains our use of different frameworks
-  for the purpose of comparing and contrasting the strengths and weaknesses of each framework
-- Included frameworks: Angular, React, Vue, and 
-  WebComponents
+/**
+ * Map state to props
+ * @param  {object} state is the obeject from redux store
+ * @param  {object} ownProps is the props belong to component
+ * @return {object}          props of component
+ */
+const mapStateToProps = (state, ownProps) =&gt; {
+    const { uid } = state.authorize
+    let votes = state.vote.postVotes[ownProps.id]
+    const post = (state.post.userPosts[uid] ? Object.keys(state.post.userPosts[uid]).filter((key) =&gt; { return ownProps.id === key }).length : 0)
 
-/docs
-- this folder contains teh documentation to the components
-  under development as well as components that have reached
-  production
-- docs are able to be viewed via a browser</code>
-</code></pre><h1 id="license">License</h1><p><a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
-</div>
+    return {
+        avatar: state.user.info &amp;&amp; state.user.info[ownProps.ownerUserId] ? state.user.info[ownProps.ownerUserId].avatar || &apos;&apos; : &apos;&apos;,
+        fullName: state.user.info &amp;&amp; state.user.info[ownProps.ownerUserId] ? state.user.info[ownProps.ownerUserId].fullName || &apos;&apos; : &apos;&apos;,
+        commentCount: state.comment.postComments[ownProps.id] ? Object.keys(state.comment.postComments[ownProps.id]).length : 0,
+        voteCount: state.vote.postVotes[ownProps.id] ? Object.keys(state.vote.postVotes[ownProps.id]).length : 0,
+        userVoteStatus: votes &amp;&amp; Object.keys(votes).filter((key) =&gt; votes[key].userId === state.authorize.uid)[0] ? true : false,
+        isPostOwner: post &gt; 0
+    }
+}
+
+// - Connect component to redux store
+export default connect(mapStateToProps, mapDispatchToProps)(Post)
+</code></pre>
+
 </div>
 
 <footer class="footer">
